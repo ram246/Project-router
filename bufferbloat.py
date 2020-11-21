@@ -22,6 +22,8 @@ import sys
 import os
 import math
 
+import helper
+
 # TODO: Don't just read the TODO sections in this code.  Remember that
 # one of the goals of this assignment is for you to learn how to use
 # Mininet. :-)
@@ -195,11 +197,13 @@ def bufferbloat():
     # spawned on host h1 (not from google!)
     # Hint: have a separate function to do this and you may find the
     # loop below useful.
-    measure_fetch_times(net)
+    fetch_times = measure_fetch_times(net)
 
     # TODO: compute average (and standard deviation) of the fetch
     # times.  You don't need to plot them.  Just note it in your
     # README and explain.
+    print ("Average: " + str(helper.avg(fetch_times)))
+    print ("Standard deviation: " + str(helper.stdev(fetch_times)))
 
     stop_tcpprobe()
     if qmon is not None:
@@ -219,15 +223,17 @@ def measure_fetch_times(net):
     while True:
         # Fetch the html page
         out = h2.popen("curl -o temp -s -w %{time_total} " + h1.IP() + "/http/index.html")
-        print "reading"
-        print (out.stdout.read())
+        fetch_times.append(float(out.stdout.read()))
         # do the measurement (say) 3 times.
-        sleep(1)
+        # Send curl command every 2 seconds
+        sleep(2)
         now = time()
         delta = now - start_time
         if delta > args.time:
             break
         print "%.1fs left..." % (args.time - delta)
+    
+    return fetch_times
 
 if __name__ == "__main__":
     bufferbloat()
