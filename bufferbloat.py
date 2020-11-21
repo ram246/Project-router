@@ -85,10 +85,10 @@ class BBTopo(Topo):
         # Assume only 2 hosts
 
         # Fast link from host to switch
-        self.addLink(hosts[0], switch, bw=args.bw_host, delay=args.delay + 'ms')
+        self.addLink(hosts[0], switch, bw=args.bw_host, delay=(str(args.delay) + 'ms'))
 
         # Slow link from switch to end host
-        self.addLink(hosts[1], switch, bw=args.bw_net, delay=args.delay+'ms', max_queue_size=args.maxq)
+        self.addLink(hosts[1], switch, bw=args.bw_net, delay=(str(args.delay) + 'ms'), max_queue_size=args.maxq)
 
 
 # Simple wrappers around monitoring utilities.  You are welcome to
@@ -122,7 +122,7 @@ def start_iperf(net):
     # long lived TCP flow. You may need to redirect iperf's stdout to avoid blocking.
     h1 = net.get("h1")
     # Open iperf client at h1's ip and for duration of experiment
-    h1.popen("iperf -c " + h2.IP() + " -t " + args.time + " > iperf_out", shell=True)
+    h1.popen("iperf -c " + h2.IP() + " -t " + str(args.time) + " > iperf_out", shell=True)
 
 def start_webserver(net):
     h1 = net.get('h1')
@@ -144,7 +144,7 @@ def start_ping(net):
     # redirecting stdout
     h1 = net.get('h1')
     h2 = net.get('h2')
-    popen = h1.popen("ping -i 0.1 -w " + args.time +" " + h2.IP() + "> %s/ping.txt"%(args.dir), shell=True)
+    popen = h1.popen("ping -i 0.1 -w " + str(args.time) +" " + h2.IP() + "> %s/ping.txt"%(args.dir), shell=True)
 
 def bufferbloat():
     if not os.path.exists(args.dir):
