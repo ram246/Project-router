@@ -7,8 +7,8 @@ set -e
 time=60
 bwnet=10
 # TODO: If you want the RTT to be 4ms what should the delay on each
-# link be?  Set this value correctly.
-delay=1
+# link be?  Set this value correctly. (delay of 2ms each way?)
+delay=2
 
 iperf_port=5001
 
@@ -16,7 +16,7 @@ modprobe tcp_probe
 # make sure we don't use a cached cwnd
 sysctl -w net.ipv4.tcp_no_metrics_save=1
 
-for qsize in 20 100; do
+for qsize in 5 20 100; do
     dir=bb-q$qsize
 
     python bufferbloat.py --dir=$dir --time=$time --bw-net=$bwnet --delay=$delay --maxq=$qsize

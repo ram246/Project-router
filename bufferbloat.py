@@ -81,6 +81,15 @@ class BBTopo(Topo):
         switch = self.addSwitch('s0')
 
         # TODO: Add links with appropriate characteristics
+        # DONE
+        # Assume only 2 hosts
+
+        # Fast link from host to switch
+        self.addLink(hosts[0], switch, bw=args.bw_host, delay=args.delay + 'ms')
+
+        # Slow link from switch to end host
+        self.addLink(hosts[1], switch, bw=args.bw_net, delay=args.delay+'ms', max_queue_size=args.maxq)
+
 
 # Simple wrappers around monitoring utilities.  You are welcome to
 # contribute neatly written (using classes) monitoring scripts for
@@ -111,6 +120,9 @@ def start_iperf(net):
     server = h2.popen("iperf -s -w 16m")
     # TODO: Start the iperf client on h1.  Ensure that you create a
     # long lived TCP flow. You may need to redirect iperf's stdout to avoid blocking.
+    h1 = net.get("h1")
+    # Open iperf client at h1's ip and for duration of experiment
+    h1.popen("iperf -c " + h2.IP() + " -t " + args.time + " > iperf_out", shell=True)
 
 def start_webserver(net):
     h1 = net.get('h1')
@@ -120,6 +132,7 @@ def start_webserver(net):
 
 def start_ping(net):
     # TODO: Start a ping train from h1 to h2 (or h2 to h1, does it
+    # Done
     # matter?)  Measure RTTs every 0.1 second.  Read the ping man page
     # to see how to do this.
 
@@ -130,7 +143,8 @@ def start_ping(net):
     # until stdout is read. You can avoid this by runnning popen.communicate() or
     # redirecting stdout
     h1 = net.get('h1')
-    popen = h1.popen("echo '' > %s/ping.txt"%(args.dir), shell=True)
+    h2 = net.get('h2')
+    popen = h1.popen("ping -i 0.1 -w " + args.time +" " + h2.IP() + "> %s/ping.txt"%(args.dir), shell=True)
 
 def bufferbloat():
     if not os.path.exists(args.dir):
@@ -151,7 +165,7 @@ def bufferbloat():
 
     # Start all the monitoring processes
     start_tcpprobe("cwnd.txt")
-    start_ping(net)
+    
 
     # TODO: Start monitoring the queue sizes.  Since the switch I
     # created is "s0", I monitor one of the interfaces.  Which
@@ -159,12 +173,14 @@ def bufferbloat():
     # Depending on the order you add links to your network, this
     # number may be 1 or 2.  Ensure you use the correct number.
     #
-    # qmon = start_qmon(iface='s0-eth2',
-    #                  outfile='%s/q.txt' % (args.dir))
-    qmon = None
+    qmon = start_qmon(iface='s0-eth2',
+                     outfile='%s/q.txt' % (args.dir))
+    #qmon = None
 
     # TODO: Start iperf, webservers, etc.
-    # start_iperf(net)
+    start_iperf(net)
+    start_ping(net)
+    start_webserver(net)
 
     # Hint: The command below invokes a CLI which you can use to
     # debug.  It allows you to run arbitrary commands inside your
@@ -179,15 +195,7 @@ def bufferbloat():
     # spawned on host h1 (not from google!)
     # Hint: have a separate function to do this and you may find the
     # loop below useful.
-    start_time = time()
-    while True:
-        # do the measurement (say) 3 times.
-        sleep(1)
-        now = time()
-        delta = now - start_time
-        if delta > args.time:
-            break
-        print "%.1fs left..." % (args.time - delta)
+
 
     # TODO: compute average (and standard deviation) of the fetch
     # times.  You don't need to plot them.  Just note it in your
@@ -200,6 +208,26 @@ def bufferbloat():
     # Ensure that all processes you create within Mininet are killed.
     # Sometimes they require manual killing.
     Popen("pgrep -f webserver.py | xargs kill -9", shell=True).wait()
+
+def measure_fetch_times(net):
+    h1 = net.get('h1')
+    h2 - net.get('h2')
+
+    # Store the fetch times in a list so we can compute std and avg
+    fetch_times =[]
+    start_time = time()
+    while True:
+        # Fetch the html page
+        out = h2.popen("curl -o temp -s -w %{time_total} " + h1.IP() + "/http/index.html")
+        print "reading"
+        print (out.stdout.read())
+        # do the measurement (say) 3 times.
+        sleep(1)
+        now = time()
+        delta = now - start_time
+        if delta > args.time:
+            break
+        print "%.1fs left..." % (args.time - delta)
 
 if __name__ == "__main__":
     bufferbloat()
