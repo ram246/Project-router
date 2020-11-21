@@ -195,7 +195,7 @@ def bufferbloat():
     # spawned on host h1 (not from google!)
     # Hint: have a separate function to do this and you may find the
     # loop below useful.
-
+    measure_fetch_times(net)
 
     # TODO: compute average (and standard deviation) of the fetch
     # times.  You don't need to plot them.  Just note it in your
