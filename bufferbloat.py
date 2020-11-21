@@ -211,7 +211,7 @@ def bufferbloat():
 
 def measure_fetch_times(net):
     h1 = net.get('h1')
-    h2 - net.get('h2')
+    h2 = net.get('h2')
 
     # Store the fetch times in a list so we can compute std and avg
     fetch_times =[]
