@@ -22,7 +22,7 @@ parser.add_argument('--freq',
 
 parser.add_argument('--type', '-t',
                     help="Determines if it is a ping plot or download plot",
-                    default="plot")
+                    default="ping")
 
 parser.add_argument('--out', '-o',
                     help="Output png file for the plot.",
