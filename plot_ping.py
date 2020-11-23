@@ -95,7 +95,7 @@ for i, f in enumerate(args.files):
 if args.type == 'ping':
     plt.ylabel("RTT (ms)")
 elif args.type == 'download':
-    plt.ylabel("Download time (ms)")
+    plt.ylabel("Download time (s)")
 
 plt.grid(True)
 
