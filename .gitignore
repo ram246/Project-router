@@ -1,1 +1,4 @@
 *.docx
+iperf_out
+*.pyc
+temp

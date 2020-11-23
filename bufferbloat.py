@@ -216,14 +216,17 @@ def bufferbloat():
 def measure_fetch_times(net):
     h1 = net.get('h1')
     h2 = net.get('h2')
-
+    
+    output_file = open('%s/download_time.txt' % (args.dir), 'w')
     # Store the fetch times in a list so we can compute std and avg
     fetch_times =[]
     start_time = time()
     while True:
         # Fetch the html page
         out = h2.popen("curl -o temp -s -w %{time_total} " + h1.IP() + "/http/index.html")
-        fetch_times.append(float(out.stdout.read()))
+        fetch_time = float(out.stdout.read())
+        output_file.write(str(fetch_time) + '\n')
+        fetch_times.append(fetch_time)
         # do the measurement (say) 3 times.
         # Send curl command every 2 seconds
         sleep(2)
@@ -233,6 +236,7 @@ def measure_fetch_times(net):
             break
         print "%.1fs left..." % (args.time - delta)
     
+    output_file.close()
     return fetch_times
 
 if __name__ == "__main__":

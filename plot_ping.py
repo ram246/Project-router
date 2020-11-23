@@ -17,8 +17,12 @@ parser.add_argument('--files', '-f',
 
 parser.add_argument('--freq',
                     help="Frequency of pings (per second)",
-                    type=int,
+                    type=float,
                     default=10)
+
+parser.add_argument('--type', '-t',
+                    help="Determines if it is a ping plot or download plot",
+                    default="plot")
 
 parser.add_argument('--out', '-o',
                     help="Output png file for the plot.",
@@ -43,11 +47,29 @@ def parse_ping(fname):
             break
     return ret
 
+def parse_download(fname):
+    ret = []
+    lines = open(fname).readlines()
+    num = 0
+    for line in lines:
+        if line == '':
+            continue
+        try:
+            down_time = float(line)
+            ret.append([num, down_time])
+            num += 1
+        except:
+            break
+    return ret
+
 m.rc('figure', figsize=(16, 6))
 fig = figure()
 ax = fig.add_subplot(111)
 for i, f in enumerate(args.files):
-    data = parse_ping(f)
+    if args.type == 'ping':
+        data = parse_ping(f)
+    elif args.type == 'download':
+        data = parse_download(f)
     if len(data) == 0:
         print >>sys.stderr, "%s: error: no ping data"%(sys.argv[0])
         sys.exit(1)
@@ -60,7 +82,11 @@ for i, f in enumerate(args.files):
     ax.scatter(xaxis, qlens, lw=2)
     ax.xaxis.set_major_locator(MaxNLocator(4))
 
-plt.ylabel("RTT (ms)")
+if args.type == 'ping':
+    plt.ylabel("RTT (ms)")
+elif args.type == 'download':
+    plt.ylabel("Download time (ms)")
+
 plt.grid(True)
 
 if args.out:
