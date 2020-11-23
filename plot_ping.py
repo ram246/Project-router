@@ -56,7 +56,16 @@ def parse_download(fname):
             continue
         try:
             down_time = float(line)
-            ret.append([num, down_time])
+            # Compute time that download starts
+            if num == 0:
+                time = 0
+            else:
+                # 2 seconds in between downloads (freq = 0.5 := 1 download every 2 sec)
+                interval_time = 1 / args.freq
+                # Curr_time = prev_time + interval_time + duration of prev download
+                time = ret[num - 1][0] + interval_time + ret[num - 1][1]
+            
+            ret.append([time, down_time])
             num += 1
         except:
             break
@@ -68,15 +77,16 @@ ax = fig.add_subplot(111)
 for i, f in enumerate(args.files):
     if args.type == 'ping':
         data = parse_ping(f)
+        xaxis = map(float, col(0, data))
+        start_time = xaxis[0]
+        xaxis = map(lambda x: (x - start_time) / args.freq, xaxis)
     elif args.type == 'download':
         data = parse_download(f)
+        xaxis = map(float, col(0, data))    
     if len(data) == 0:
         print >>sys.stderr, "%s: error: no ping data"%(sys.argv[0])
         sys.exit(1)
 
-    xaxis = map(float, col(0, data))
-    start_time = xaxis[0]
-    xaxis = map(lambda x: (x - start_time) / args.freq, xaxis)
     qlens = map(float, col(1, data))
 
     ax.scatter(xaxis, qlens, lw=2)
